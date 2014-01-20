@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="static/bootstrap.min.css">
+<link rel="stylesheet" href="static/bootstrap-theme.min.css">
+<link rel="stylesheet" href="static/jquery-ui.css">
+<style type="text/css">
+ section {
+    width: 50%;
+    height: 80%;
+    margin: auto;
+    padding: 10px;
+}
+div#one {
+    width: 45%;
+
+
+    float: left;
+}
+div#two {
+    margin-left: 50%;
+
+
+}
+</style>
+
+<script src="static/jquery.js"></script>
+<script src="static/jquery-ui.js"></script>
+
+<script src="static/bootstrap.min.js"></script>
+<body onload="loadRadios(); nowPlaying()" background="static/ornate_wallpaper_by_insurrectionx.jpg" >
+
+
+
+
+
+<center>
+
+    <section>
+
+
+
+
+<h1> RADIO !!</h1>
+
+<span>Now Playing: <b id="playing"></b></span>
+<br>
+
+<div id="one">
+            <table id="#result">
+
+            </table>
+</div>
+         <div id="two">
+
+
+                 <!--    <p>
+                  <label for="amount">Volume:</label>
+                 <input type="text" id="amount" style="border:0; color:#f6931f; font-weight:bold;">
+                </p>
+                 -->
+                <label >Volume:</label>
+                <div id="slider-vertical" style="height:200px;"></div>
+                 <br> <br>
+                <input type='button' style='width:120px' class='btn btn-primary' value='Admin' onclick="window.location.href='/admin'" />
+
+        </div>
+</section>
+</center>
+
+</body>
+
+<script>
+
+
+
+function getBaseURL(){
+document.URL
+return
+}
+
+function play(ele){
+
+$.ajax({
+    url: '/radio/play/'+ele,
+    type: 'GET',
+   // data: 'ID=1&Name=John&Age=10', // or $('#myform').serializeArray()
+    success: function() {
+    //alert('PUT completed');
+    nowPlaying();
+     }
+});
+
+
+}
+
+function nowPlaying(){
+
+$.ajax({
+    url: '/radio/nowplaying',
+    type: 'GET',
+
+    success: function(data) {
+    //console.log(jQuery.parseJSON(data).ResponseData.Description);
+     document.getElementById('playing').innerHTML=jQuery.parseJSON(data).ResponseData.Description;
+     }
+});
+}
+
+function stop(){
+
+$.ajax({
+    url: '/radio/stop',
+    type: 'GET',
+    success: function() {
+     document.getElementById('playing').innerHTML= 'none';
+    }
+});
+}
+
+function shutdown(){
+
+$.ajax({
+    url: '/shutdown',
+    type: 'GET',
+    success: function() {
+     document.getElementById('playing').innerHTML= 'is Shutting down RPI!';
+    }
+});
+}
+
+
+function getVolume(){
+
+$.ajax({
+    url: '/getvolume',
+    type: 'GET',
+    success: function(data) {
+     console.log(data.ResponseData);
+    }
+});
+}
+
+
+
+function addRadio(text){
+
+$.ajax({
+    data:{line:text},
+    url: 'http://localhost:8888/addradio',
+    type: 'POST',
+    success: function(data) {
+    alert("Radio list changed!");
+    location.reload();
+    }
+});
+
+}
+
+
+function setVolume(ele){
+
+$.ajax({
+    url: '/setvolume/'+ele,
+    type: 'GET',
+    success: function() { console.log("Volume set!"); }
+});
+}
+
+
+
+function loadRadios(){
+
+// load json from url does only work with local shit!
+//var json = '{"ErrorCode": 0, "ResponseData": {"Radios": [{"StreamUrl": "mms://apasf.apa.at/OE3_Live_Audio", "DisplayName": "Hitradio \u00d63", "RadioId": "0"}, {"StreamUrl": "http://mp3stream1.apasf.apa.at:8000", "DisplayName": "fm4", "RadioId": "1"}, {"StreamUrl": "http://bbc.co.uk/radio/listen/live/r1_aaclca.pls", "DisplayName": "BBC1", "RadioId": "2"}, {"StreamUrl": "http://swr.ic.llnwd.net:80/stream/swr_mps_m_dasdinga", "DisplayName": "DasDing", "RadioId": "3"}, {"StreamUrl": "http://swr-mp3-m-swr3.akacast.akamaistream.net/7/720/137136/v1/gnl.akacast.akamaistream.net/swr-mp3-m-swr3", "DisplayName": "SWR3", "RadioId": "4"}, {"StreamUrl": "http://stream.dradio.de/7/249/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dlf_m", "DisplayName": "DF", "RadioId": "5"}, {"StreamUrl": "http://www.antennestream.at", "DisplayName": "Antenne K\u00e4rnten", "RadioId": "6"}, {"StreamUrl": "mms://apasf.apa.at/oe1_live_worldwide", "DisplayName": "\u00d61", "RadioId": "7"}]}, "ErrorMessage": ""}';
+
+var url = '/radios';
+
+
+$.ajax({
+  dataType: "json",
+  url: url,
+  success: function(data) { 
+
+  var radios = data.ResponseData.Radios;
+    // console.log(radios);
+
+	  var items = [];
+
+	 $.each(radios, function(radio){
+
+	  items.push("<tr> <td> <input type='button' style='width:120px' value='"+ radios[radio].DisplayName+"' class='btn btn-default' onclick='play("+radios[radio].RadioId+")' /> </td>	 </tr>" );
+	 });
+
+	// items.push("	 <tr><td>	 <input type='button' style='width:120px' class='btn btn-primary' value='getVolume' onclick='getVolume()' />	 <input type='button' style='width:120px' class='btn btn-primary' value='stop' onclick='stop()' />	 <input type='button' style='width:120px' class='btn btn-primary' value='setVolume' onclick='setVolume(0)' />	 </td></tr>	 ");
+
+    items.push("	 <tr><td>		 <input type='button' style='width:120px' class='btn btn-primary' value='stop' onclick='stop()' />	 </td></tr>	 ");
+
+   //items.push("	 <tr><td>		 <input type='button' style='width:120px' class='btn btn-primary' value='shutdown' onclick='shutdown()' />	 </td></tr>	 ");
+
+	document.getElementById("#result").innerHTML = items.join( "" );
+
+
+
+   }
+});
+
+
+ $(function() {
+    $( "#slider-vertical" ).slider({
+      orientation: "vertical",
+      range: "min",
+      min: -2000,
+      max: 200,
+      value: -1000,
+      slide: function( event, ui ) {
+        $( "#amount" ).val( ui.value );
+
+        // use value to call shit!
+        setVolume(ui.value);
+      }
+    });
+    $( "#amount" ).val( $( "#slider-vertical" ).slider( "value" ) );
+  });
+
+
+}
+
+
+
+
+</script>
+</html>

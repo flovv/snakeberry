@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="static/bootstrap.min.css">
+<link rel="stylesheet" href="static/bootstrap-theme.min.css">
+
+<script src="static/jquery.js"></script>
+
+<script src="static/bootstrap.min.js"></script>
+<body onload="loadRadios(); nowPlaying()" background="static/ornate_wallpaper_by_insurrectionx.jpg" >
+
+
+
+
+
+<center>
+<h1> RADIO !! - Admin interface</h1>
+
+<span>Now Playing: <b id="playing"></b></span>
+
+ <h3>Radiolist:</h3>
+
+<table id="#result">
+
+</table>
+
+    <h3>Add new Radio</h3>
+    <br>
+    <input type="text" value="description" id="desc" />
+    <input type="text" value="url" id="url" />
+    <input type='button' style='width:120px' class='btn btn-primary' value='add radio' onclick='addRadio();' />
+
+</center>
+
+</body>
+
+<script>
+
+function getBaseURL(){
+document.URL
+return
+}
+
+function play(ele){
+
+$.ajax({
+    url: '/radio/play/'+ele,
+    type: 'GET',
+   // data: 'ID=1&Name=John&Age=10', // or $('#myform').serializeArray()
+    success: function() {
+    //alert('PUT completed');
+    nowPlaying();
+     }
+});
+
+
+}
+
+function nowPlaying(){
+
+$.ajax({
+    url: '/radio/nowplaying',
+    type: 'GET',
+
+    success: function(data) {
+    //console.log(jQuery.parseJSON(data).ResponseData.Description);
+     document.getElementById('playing').innerHTML=jQuery.parseJSON(data).ResponseData.Description;
+     }
+});
+}
+
+function stop(){
+
+$.ajax({
+    url: '/radio/stop',
+    type: 'GET',
+    success: function() {
+     document.getElementById('playing').innerHTML= 'none';
+    }
+});
+}
+
+function shutdown(){
+
+$.ajax({
+    url: '/shutdown',
+    type: 'GET',
+    success: function() {
+     document.getElementById('playing').innerHTML= 'is Shutting down RPI!';
+    }
+});
+}
+
+
+function getVolume(){
+
+$.ajax({
+    url: '/getvolume',
+    type: 'GET',
+    success: function(data) {
+     console.log(data.ResponseData);
+    }
+});
+}
+
+function removeRadio(txt){
+
+//var txt = txt1 + ";" + txt2;
+console.log(txt);
+
+$.ajax({
+    data:{line:txt},
+    url: 'http://localhost:8888/removeradio',
+    type: 'POST',
+    success: function(data) {
+    alert("Radio list changed!");
+    location.reload();
+    }
+});
+
+}
+
+function addRadio(){
+var text = document.getElementById("desc").value+ ";" + document.getElementById("url").value;
+console.log(text);
+
+$.ajax({
+    data:{line:text},
+    url: 'http://localhost:8888/addradio',
+    type: 'POST',
+    success: function(data) {
+    alert("Radio list changed!");
+    location.reload();
+    }
+});
+
+}
+
+
+function setVolume(ele){
+
+$.ajax({
+    url: 'http://localhost:8888/setvolume/'+ele,
+    type: 'GET',
+    success: function() { console.log("Volume set!"); }
+});
+}
+
+
+
+function loadRadios(){
+
+
+var url = '/radios';
+
+
+$.ajax({
+  dataType: "json",
+  url: url,
+  success: function(data) { 
+
+  var radios = data.ResponseData.Radios;
+     //console.log(radios);
+
+	  var items = [];
+        var count =0;
+	 $.each(radios, function(radio){
+
+	  items.push(radios[radio].DisplayName+ " <input type='button' style='width:30px' class='btn btn-primary' value='X' id='radio_"+count+"' onclick='removeRadio("+count + " )'  />	 <br>" );
+	        count++;
+	  });
+
+
+    items.push(" <input type='button' style='width:120px' class='btn btn-primary' value='shutdown RPI' onclick='shutdown()' />	 ");
+
+	document.getElementById("#result").innerHTML = items.join( "" );
+ /* count =0;
+
+     $.each(radios, function(radio){
+        $( "#radio_"+count ).click(function(count) {
+            removeRadio(' " + count + " ');
+        });
+        count++;
+	// onclick='removeRadio("+radios[radio].DisplayName + "','"+ radios[radio].StreamUrl+"' )'
+  });
+      */
+
+   }
+});
+
+}
+
+
+
+
+</script>
+</html>
